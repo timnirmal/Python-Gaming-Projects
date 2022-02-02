@@ -30,8 +30,11 @@ Projection_Matrix = np.matrix([[1, 0, 0], [0, 1, 0], [0, 0, 0]])
 scale = 100
 circle_pos = [WIDTH / 2, HEIGHT / 2]
 point_size = 7
+angle = 0
 
+clock = pygame.time.Clock()
 while True:
+    clock.tick(60)
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             pygame.quit()
@@ -42,6 +45,13 @@ while True:
                 exit()
 
     # Update Here
+    # For rotation we need to use "Rotation_Matrix"
+    # Rotation z axis
+    Rotation_Matrix_Z = np.matrix([[np.cos(angle), -np.sin(angle), 0], [np.sin(angle), np.cos(angle), 0], [0, 0, 1]])
+    Rotation_Matrix_X = np.matrix([[1, 0, 0], [0, np.cos(angle), -np.sin(angle)], [0, np.sin(angle), np.cos(angle)]])
+    Rotation_Matrix_Y = np.matrix([[np.cos(angle), 0, np.sin(angle)], [0, 1, 0], [-np.sin(angle), 0, np.cos(angle)]])
+
+    angle += 0.05
 
 
     screen.fill(WHITE)
@@ -49,7 +59,10 @@ while True:
     # Draw Stuff Here
     # draw points
     for point in points:
-        projected_point = np.dot(Projection_Matrix, point.reshape(3, 1))
+        # Now before projecting we need calculate the Rotational point by multiplying the point with Rotation Matrix
+        Rotated_Point = np.dot(Rotation_Matrix_Z, point.reshape(3, 1))
+        Rotated_Point = np.dot(Rotation_Matrix_X, Rotated_Point)
+        projected_point = np.dot(Projection_Matrix, Rotated_Point)
         x = int(projected_point[0][0] * scale) + circle_pos[0]
         y = int(projected_point[1][0] * scale) + circle_pos[1]
         pygame.draw.circle(screen, BLACK, (x, y), point_size)
